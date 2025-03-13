@@ -8,3 +8,6 @@ whenever connect to database always use
   2.async await
 
 ---
+
+CORS_ORIGIN=* means request can be accepted from everywhere we have to prive the frontend deployed url here
+---
