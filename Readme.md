@@ -11,3 +11,4 @@ whenever connect to database always use
 
 CORS_ORIGIN=* means request can be accepted from everywhere we have to prive the frontend deployed url here
 ---
+mongoose aggrigation pipelines

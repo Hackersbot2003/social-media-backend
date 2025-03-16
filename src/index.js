@@ -20,7 +20,7 @@ connectDB()
   })
 })
 .catch((err)=>{
-  console.log("mpngodb connection failed",err);
+  console.log("mongodb connection failed",err);
   
 })
 
