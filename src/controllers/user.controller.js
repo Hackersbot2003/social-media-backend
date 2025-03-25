@@ -4,6 +4,8 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
+import mongoose from 'mongoose';
+
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -160,8 +162,8 @@ const logoutUser = asyncHandeler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: undefined,
+      $unset: {
+        refreshToken: 1,
       },
     },
     {
@@ -321,7 +323,7 @@ const updateUserCoverImage = asyncHandeler(async(req,res)=>{
     throw new ApiError(400,"Error while uploading coverImage")
   }
 
-  await User.findByIdAndUpdate(
+  const user = await User.findByIdAndUpdate(
     req.user?._id,
     { 
       $set:{
@@ -329,7 +331,7 @@ const updateUserCoverImage = asyncHandeler(async(req,res)=>{
       }
     },
     {new:true}
-  ),select("-password")
+  ).select("-password")
 
   return res
   .status(200)
@@ -341,7 +343,7 @@ const updateUserCoverImage = asyncHandeler(async(req,res)=>{
 const getUserChannelProfile = asyncHandeler(async(req,res)=>{
   const {username} = req.params
 
-  if (!username?.trim) {
+  if (!username?.trim()) {
     throw new ApiError(400,"username is missing")
   }
 
@@ -370,11 +372,12 @@ const getUserChannelProfile = asyncHandeler(async(req,res)=>{
     },
     {
       $addFields:{
-        subscribersCounts:{
+       
+        subscribersCount:{
           $size:"$subscribers"
         },
         channelSubscribedToCount:{
-          $size:"subscribedTo"
+          $size:"$subscribedTo"
         },
         isSubscribed:{
           $cond:{
@@ -389,7 +392,7 @@ const getUserChannelProfile = asyncHandeler(async(req,res)=>{
       $project:{
         fullName:1,
         username:1,
-        subscribersCounts:1,
+        subscribersCount:1,
         channelSubscribedToCount:1,
         isSubscribed:1,
         avatar:1,
@@ -422,14 +425,14 @@ const getWatchHistory = asyncHandeler(async(req,res)=>{
       $lookup:{
         from:"videos",
         localField:"watchHistory",
-        foriegnField:"_id",
+        foreignField:"_id",
         as:"watchHistory",
         pipeline: [
           {
             $lookup:{
               from:"users",
               localField:"owner",
-              foriegnField:"_id",
+              foreignField:"_id",
               as:"owner",
               pipeline:[
                 {
